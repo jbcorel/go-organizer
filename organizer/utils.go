@@ -18,10 +18,20 @@ func dirExists(path string) (bool, error) {
 		return false, errors.New("Not a directory")
 	}
 
-	return true, err
+	return true, nil
 }
 
-// Not yet supporting non-current-dir path
-func rootFromArgs() (string, error) {
-	return ".", nil
+func createDirIfNotExists(path string) error {
+	exists, err := dirExists(path)
+
+	if err != nil {
+		return err
+	}
+
+	if exists {
+		return nil
+	} else {
+		return os.Mkdir(path, os.FileMode(07555))
+	}
+
 }
