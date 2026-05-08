@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 )
 
 type fileEntry struct {
@@ -46,6 +48,7 @@ func readDir(root string) ([]fileEntry, error) {
 	return fileEntries, nil
 }
 
+// TODO change to dest string and move file to dest, not to root
 func processFileEntry(entry fileEntry) error {
 	if entry.isDir {
 		errString := fmt.Sprint(entry.absPath, " is a directory")
@@ -75,11 +78,24 @@ func processFileEntry(entry fileEntry) error {
 	return nil
 }
 
-func flattenDirectory(path string) error {
-	_, err := readDir(path)
+// destDir - destination of files from path, path - dir to flatten
+func flattenDirectory(destDir string, path string) error {
+	entries, err := readDir(path)
 
 	if err != nil {
 		return err
 	}
 
+	for _, entry := range entries {
+		if entry.isDir && slices.Contains(slices.Collect(maps.Values(folderMap)), entry.name) {
+			flattenDirectory(destDir, entry.absPath)
+		} else if destDir != path { //its okay since we start with root and wont move to non-media folders anyway. Not the cleanest tho
+			if err := os.Rename(entry.absPath, filepath.Join(destDir, entry.name)); err != nil {
+				fmt.Println(err)
+			}
+		}
+	}
+	os.Remove(path)
+
+	return nil
 }

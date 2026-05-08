@@ -12,6 +12,11 @@ func main() {
 		os.Exit(1)
 	}
 
+	if Cfg.flatten {
+		flattenDirectory(Cfg.root, Cfg.root)
+		return
+	}
+
 	entries, err := readDir(Cfg.root)
 
 	if err != nil {

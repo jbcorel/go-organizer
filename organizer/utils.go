@@ -31,7 +31,7 @@ func createDirIfNotExists(path string) error {
 	if exists {
 		return nil
 	} else {
-		return os.Mkdir(path, os.FileMode(07555))
+		return os.Mkdir(path, os.FileMode(0755))
 	}
 
 }
