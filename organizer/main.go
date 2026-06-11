@@ -2,34 +2,24 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"time"
 )
 
 func main() {
-	err := InitConfig()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
 
-	if Cfg.flatten {
-		flattenDirectory(Cfg.root, Cfg.root)
-		return
-	}
+	c := make(chan int)
 
-	entries, err := readDir(Cfg.root)
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	for _, entry := range entries {
-		err := processFileEntry(entry)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-
-	fmt.Println("Finished")
+	go func() { 
+		c <- 2;
+		close(c)
+ 	}()
+	
+	time.Sleep(1 * time.Second)
+	v, ok := <-c
+	v1, ok1 := <-c
+	v2, ok2 := <-c
+	fmt.Println(v, ok)
+	fmt.Println(v1, ok1)
+	fmt.Println(v2, ok2)
+	
 }

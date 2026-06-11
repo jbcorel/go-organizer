@@ -1,3 +1,3 @@
-module "jbcorel/go-organizer"
+module "organizer"
 
 go 1.26.1
