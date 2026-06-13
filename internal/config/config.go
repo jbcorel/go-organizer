@@ -9,13 +9,12 @@ import (
 type Category string
 
 const (
-	Videos Category = "videos"
-	Pictures Category = "pictures"
+	Videos    Category = "videos"
+	Pictures  Category = "pictures"
 	Documents Category = "documents"
 )
 
-
-var categoryMap = map[string]Category{
+var CategoryMap = map[string]Category{
 	".png":  Pictures,
 	".jpg":  Pictures,
 	".jpeg": Pictures,
@@ -35,7 +34,6 @@ type Config struct {
 	Workers   int
 }
 
-
 func Load() (*Config, error) {
 	flagDryRun := flag.Bool("dry-run", false, "Do a dry-run of the program")
 	flagFlatten := flag.Bool("flatten", false, "Flatten the directory")
@@ -46,13 +44,13 @@ func Load() (*Config, error) {
 	flag.Parse()
 
 	var cfg Config
-	
+
 	cfg.DryRun = *flagDryRun
 	cfg.Flatten = *flagFlatten
 	cfg.Recursive = *flagRecursive
 	cfg.Workers = *flagWorkers
 	root, err := filepath.Abs(".")
-	
+
 	if err != nil {
 		return nil, err
 	}

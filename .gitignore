@@ -1,7 +1,8 @@
 .env
 
-docs/
-vids/
-pics/
+documents/
+videos/
+pictures/
+duplicates/
 
 .claude

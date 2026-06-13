@@ -15,9 +15,9 @@ const (
 )
 
 var folderMap = map[Folder]string{
-	Videos:    "vids",
-	Pictures:  "pics",
-	Documents: "docs",
+	Videos:    "videos",
+	Pictures:  "pictures",
+	Documents: "documents",
 }
 
 func (f Folder) String() string {

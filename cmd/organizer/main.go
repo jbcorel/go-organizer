@@ -1,8 +1,10 @@
 package main
 
 import (
-	"organizer/internal/pipeline"
+	"fmt"
 	"organizer/internal/config"
+	"organizer/internal/pipeline"
+	"sync"
 )
 
 func main() {
@@ -12,6 +14,18 @@ func main() {
 		panic(err)
 	}
 
+	cEntry := make(chan pipeline.FileEntry)
+	cResult := make(chan pipeline.HashResult)
+
+	var wg sync.WaitGroup
+	wg.Go(func() { pipeline.Scan(cfg, cfg.Root, cEntry) })
+	wg.Go(func() { pipeline.Hash(cfg, cEntry, cResult) })
+	wg.Go(func() { pipeline.Organize(cfg, cResult) })
+
+	wg.Wait()
+
+	fmt.Println("Finished")
+
 	// add flatten too
-	
+
 }

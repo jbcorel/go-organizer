@@ -10,16 +10,14 @@ import (
 	"sync"
 )
 
-
-type hashResult struct {
-	path string
+type HashResult struct {
+	FileEntry
 	digest string
 }
 
-
-func worker(c <-chan string, r chan<- hashResult) {
-	for path := range c {
-		f, err := os.Open(path)
+func worker(c <-chan FileEntry, r chan<- HashResult) {
+	for entry := range c {
+		f, err := os.Open(entry.path)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -27,20 +25,22 @@ func worker(c <-chan string, r chan<- hashResult) {
 		h := sha256.New()
 		io.Copy(h, f)
 		f.Close()
-		
+
 		digest := hex.EncodeToString(h.Sum(nil))
-		
-		r <- hashResult{path, digest}
+
+		fmt.Printf("Digest of %s is %s\n", entry.path, digest)
+
+		r <- HashResult{entry, digest}
 	}
 }
 
-
-func Hash(cfg *config.Config, c <-chan string, r chan<- hashResult) {
+func Hash(cfg *config.Config, c <-chan FileEntry, r chan<- HashResult) {
+	defer close(r)
 	var wg sync.WaitGroup
-	
+
 	for range cfg.Workers {
 		wg.Go(func() { worker(c, r) })
 	}
-	
+
 	wg.Wait()
 }
