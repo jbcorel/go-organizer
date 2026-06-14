@@ -14,6 +14,14 @@ func main() {
 		panic(err)
 	}
 
+	if cfg.Flatten {
+		if err := pipeline.Flatten(cfg); err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println("Finished")
+		return
+	}
+
 	cEntry := make(chan pipeline.FileEntry)
 	cResult := make(chan pipeline.HashResult)
 
@@ -25,7 +33,4 @@ func main() {
 	wg.Wait()
 
 	fmt.Println("Finished")
-
-	// add flatten too
-
 }

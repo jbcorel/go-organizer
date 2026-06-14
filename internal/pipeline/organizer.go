@@ -8,25 +8,42 @@ import (
 	"path/filepath"
 )
 
-func move(f FileEntry, dest string) error {
+func move(cfg *config.Config, f FileEntry, dest string) error {
+	cfg.Logf("Moving %s -> %s\n", f.path, filepath.Join(dest, f.name))
+
+	if cfg.DryRun {
+		return nil
+	}
+
 	return os.Rename(f.path, filepath.Join(dest, f.name))
 }
 
-func processDuplicate(f FileEntry, dupPath string) error {
-	ex, err := fsutils.DirExists(dupPath)
+func ensureDir(cfg *config.Config, path string) error {
+	ex, err := fsutils.DirExists(path)
 
 	if err != nil {
 		return err
 	}
 
-	if !ex {
-		err := fsutils.CreateDir(dupPath)
-		if err != nil {
-			return err
-		}
+	if ex {
+		return nil
 	}
 
-	return move(f, dupPath)
+	cfg.Logf("Creating directory %s\n", path)
+
+	if cfg.DryRun {
+		return nil
+	}
+
+	return fsutils.CreateDir(path)
+}
+
+func processDuplicate(cfg *config.Config, f FileEntry, dupPath string) error {
+	if err := ensureDir(cfg, dupPath); err != nil {
+		return err
+	}
+
+	return move(cfg, f, dupPath)
 }
 
 func Organize(cfg *config.Config, c <-chan HashResult) {
@@ -39,7 +56,7 @@ func Organize(cfg *config.Config, c <-chan HashResult) {
 		dup := dupMap[[2]string{hr.digest, hr.ext}]
 
 		if dup {
-			err := processDuplicate(hr.FileEntry, duplicatePath)
+			err := processDuplicate(cfg, hr.FileEntry, duplicatePath)
 			if err != nil {
 				fmt.Printf("Error processing duplicate: \n\n%v", err)
 			}
@@ -53,25 +70,13 @@ func Organize(cfg *config.Config, c <-chan HashResult) {
 		}
 
 		folderPath = filepath.Join(cfg.Root, string(folder))
-		ex, err := fsutils.DirExists(folderPath)
 
-		if err != nil {
-			fmt.Printf("Error checking if %s exists: \n%v", folderPath, err)
+		if err := ensureDir(cfg, folderPath); err != nil {
+			fmt.Printf("Error creating directory %s: \n%v", folderPath, err)
 			continue
 		}
 
-		if !ex {
-			err = fsutils.CreateDir(folderPath)
-
-			if err != nil {
-				fmt.Printf("Error creating directory %s: \n%v", folderPath, err)
-				continue
-			}
-		}
-
-		err = move(hr.FileEntry, folderPath)
-
-		if err != nil {
+		if err := move(cfg, hr.FileEntry, folderPath); err != nil {
 			fmt.Printf("Error processing file %s: \n%v", hr.path, err)
 			continue
 		}

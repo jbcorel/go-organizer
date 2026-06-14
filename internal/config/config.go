@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -31,7 +32,15 @@ type Config struct {
 	Flatten   bool
 	Recursive bool
 	DryRun    bool
+	Verbose   bool
 	Workers   int
+}
+
+// Logf prints only when verbose output is enabled (always on during a dry run).
+func (c *Config) Logf(format string, args ...any) {
+	if c.Verbose {
+		fmt.Printf(format, args...)
+	}
 }
 
 func Load() (*Config, error) {
@@ -40,6 +49,7 @@ func Load() (*Config, error) {
 	flagRecursive := flag.Bool("recursive", false, "The program does a recursive run over root's sub-directories")
 	flagHelp := flag.Bool("help", false, "Display the help message")
 	flagWorkers := flag.Int("workers", 5, "Number of workers to launch with. Default 5")
+	flagVerbose := flag.Bool("verbose", false, "Log every action. Enabled automatically by -dry-run")
 
 	flag.Parse()
 
@@ -49,6 +59,7 @@ func Load() (*Config, error) {
 	cfg.Flatten = *flagFlatten
 	cfg.Recursive = *flagRecursive
 	cfg.Workers = *flagWorkers
+	cfg.Verbose = *flagVerbose || *flagDryRun
 	root, err := filepath.Abs(".")
 
 	if err != nil {

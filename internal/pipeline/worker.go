@@ -15,7 +15,7 @@ type HashResult struct {
 	digest string
 }
 
-func worker(c <-chan FileEntry, r chan<- HashResult) {
+func worker(cfg *config.Config, c <-chan FileEntry, r chan<- HashResult) {
 	for entry := range c {
 		f, err := os.Open(entry.path)
 		if err != nil {
@@ -28,7 +28,7 @@ func worker(c <-chan FileEntry, r chan<- HashResult) {
 
 		digest := hex.EncodeToString(h.Sum(nil))
 
-		fmt.Printf("Digest of %s is %s\n", entry.path, digest)
+		cfg.Logf("Digest of %s is %s\n", entry.path, digest)
 
 		r <- HashResult{entry, digest}
 	}
@@ -39,7 +39,7 @@ func Hash(cfg *config.Config, c <-chan FileEntry, r chan<- HashResult) {
 	var wg sync.WaitGroup
 
 	for range cfg.Workers {
-		wg.Go(func() { worker(c, r) })
+		wg.Go(func() { worker(cfg, c, r) })
 	}
 
 	wg.Wait()
