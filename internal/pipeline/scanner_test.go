@@ -7,8 +7,6 @@ import (
 	"testing"
 )
 
-// Scan blocks sending on an unbuffered channel, so run it in a goroutine and
-// drain here. It closes the channel when done, ending the range.
 func collectScan(cfg *config.Config, root string) []string {
 	c := make(chan FileEntry)
 	go Scan(cfg, root, c)
@@ -55,7 +53,6 @@ func TestScanRecursive(t *testing.T) {
 
 	cfg := &config.Config{Recursive: true}
 
-	// Also guards the recursion: a channel closed mid-recursion would panic here.
 	got := collectScan(cfg, root)
 	want := []string{"deep.pdf", "more.jpg", "photo.png"}
 

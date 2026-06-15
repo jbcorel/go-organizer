@@ -18,14 +18,13 @@ func TestFlatten(t *testing.T) {
 
 	writeFile(t, filepath.Join(pics, "a.png"), "img")
 	writeFile(t, filepath.Join(docs, "b.pdf"), "doc")
-	writeFile(t, filepath.Join(dups, "a.png"), "img-copy") // must be left alone
+	writeFile(t, filepath.Join(dups, "a.png"), "img-copy") 
 
 	cfg := &config.Config{Root: root}
 	if err := Flatten(cfg); err != nil {
 		t.Fatalf("Flatten: %v", err)
 	}
 
-	// Files pulled back up to root.
 	if !exists(t, filepath.Join(root, "a.png")) {
 		t.Errorf("pictures/a.png should be moved to root")
 	}
@@ -33,7 +32,6 @@ func TestFlatten(t *testing.T) {
 		t.Errorf("documents/b.pdf should be moved to root")
 	}
 
-	// Emptied category folders removed.
 	if exists(t, pics) {
 		t.Errorf("emptied pictures/ should be removed")
 	}
@@ -41,8 +39,7 @@ func TestFlatten(t *testing.T) {
 		t.Errorf("emptied documents/ should be removed")
 	}
 
-	// duplicates/ is intentionally skipped (flattening it would collide with
-	// the originals it deduplicated).
+	// duplicates/ is intentionally skipped 
 	if !exists(t, dups) || !exists(t, filepath.Join(dups, "a.png")) {
 		t.Errorf("duplicates/ should be left untouched")
 	}

@@ -8,8 +8,6 @@ import (
 	"testing"
 )
 
-// Computed via Sum256, a different path than the worker's streaming io.Copy,
-// so a shared bug can't hide.
 func sha256Hex(content string) string {
 	sum := sha256.Sum256([]byte(content))
 	return hex.EncodeToString(sum[:])
@@ -25,7 +23,6 @@ func TestHashComputesDigests(t *testing.T) {
 	writeFile(t, b, "hello")
 	writeFile(t, c, "world")
 
-	// Buffered so we can load all inputs before Hash drains them.
 	in := make(chan FileEntry, 3)
 	out := make(chan HashResult, 3)
 	in <- FileEntry{path: a, name: "a.txt", ext: ".txt"}
@@ -36,7 +33,6 @@ func TestHashComputesDigests(t *testing.T) {
 	cfg := &config.Config{Workers: 2}
 	Hash(cfg, in, out)
 
-	// Workers run concurrently; results arrive in any order, so index by name.
 	got := make(map[string]string)
 	for r := range out {
 		got[r.name] = r.digest
